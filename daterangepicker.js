@@ -52,6 +52,7 @@
         this.autoUpdateInput = true;
         this.alwaysShowCalendars = false;
         this.ranges = {};
+        this.extendRange = true;
 
         this.opens = 'right';
         if (this.element.hasClass('pull-right'))
@@ -272,6 +273,9 @@
 
         if (typeof options.alwaysShowCalendars === 'boolean')
             this.alwaysShowCalendars = options.alwaysShowCalendars;
+
+        if (typeof options.extendRange === 'boolean')
+            this.extendRange = options.extendRange;
 
         // update day names order to firstDay
         if (this.locale.firstDay != 0) {
@@ -1313,8 +1317,19 @@
             // * if single date picker mode, and time picker isn't enabled, apply the selection immediately
             // * if one of the inputs above the calendars was focused, cancel that manual input
             //
-
-            if (this.endDate || date.isBefore(this.startDate, 'day')) { //picking start
+            if (this.extendRange) {
+                if (cal.hasClass('left')) {
+                    this.setStartDate(date.clone());
+                    if (this.endDate && this.startDate.isAfter(this.endDate)) {
+                        this.setEndDate(date.clone());
+                    }
+                } else {
+                    this.setEndDate(date.clone());
+                    if (!this.startDate || this.startDate.isAfter(this.endDate, 'day')) {
+                      this.setStartDate(date.clone());
+                    }
+                }
+            } else if (this.endDate || date.isBefore(this.startDate, 'day')) { //picking start
                 if (this.timePicker) {
                     var hour = parseInt(this.container.find('.left .hourselect').val(), 10);
                     if (!this.timePicker24Hour) {
