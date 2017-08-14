@@ -1266,10 +1266,21 @@
             var cal = $(e.target).parents('.calendar');
             var date = cal.hasClass('left') ? this.leftCalendar.calendar[row][col] : this.rightCalendar.calendar[row][col];
 
-            if (this.endDate && !this.container.find('input[name=daterangepicker_start]').is(":focus")) {
-                this.container.find('input[name=daterangepicker_start]').val(date.format(this.locale.format));
+            var input = null;
+            if (this.extendRange) {
+                if (cal.hasClass('left')) {
+                  input = this.container.find('input[name=daterangepicker_start]');
+                } else {
+                  input = this.container.find('input[name=daterangepicker_end]');
+                }
+            } else if (this.endDate && !this.container.find('input[name=daterangepicker_start]').is(":focus")) {
+                input = this.container.find('input[name=daterangepicker_start]');
             } else if (!this.endDate && !this.container.find('input[name=daterangepicker_end]').is(":focus")) {
-                this.container.find('input[name=daterangepicker_end]').val(date.format(this.locale.format));
+                input = this.container.find('input[name=daterangepicker_end]');
+            }
+
+            if (input) {
+                input.val(date.format(this.locale.format));
             }
 
             //highlight the dates between the start date and the date being hovered as a potential end date
