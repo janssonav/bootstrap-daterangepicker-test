@@ -1303,6 +1303,26 @@
 
             if (!$(e.target).hasClass('available')) return;
 
+            // Takes a selector indicating which side to handle, and a date.
+            // If timePicker is enabled, adds the entered time into the date and returns a new (cloned) date
+            var addTimeOfDay = function(sideClass, date) {
+                if (this.timePicker) {
+                    var hour = parseInt(this.container.find(sideClass + ' .hourselect').val(), 10);
+                    if (!this.timePicker24Hour) {
+                        var ampm = this.container.find(sideClass + ' .ampmselect').val();
+                        if (ampm === 'PM' && hour < 12)
+                            hour += 12;
+                        if (ampm === 'AM' && hour === 12)
+                            hour = 0;
+                    }
+                    var minute = parseInt(this.container.find(sideClass + ' .minuteselect').val(), 10);
+                    var second = this.timePickerSeconds ? parseInt(this.container.find(sideClass + ' .secondselect').val(), 10) : 0;
+                    return date.clone().hour(hour).minute(minute).second(second);
+                }
+                return date.clone();
+            }
+            addTimeOfDay = addTimeOfDay.bind(this);
+
             var title = $(e.target).attr('data-title');
             var row = title.substr(1, 1);
             var col = title.substr(3, 1);
@@ -1319,51 +1339,26 @@
             //
             if (this.extendRange) {
                 if (cal.hasClass('left')) {
-                    this.setStartDate(date.clone());
+                    this.setStartDate(addTimeOfDay('.left', date));
                     if (this.endDate && this.startDate.isAfter(this.endDate)) {
-                        this.setEndDate(date.clone());
+                        this.setEndDate(this.startDate);
                     }
                 } else {
-                    this.setEndDate(date.clone());
-                    if (!this.startDate || this.startDate.isAfter(this.endDate, 'day')) {
-                      this.setStartDate(date.clone());
+                    this.setEndDate(addTimeOfDay('.right', date));
+                    if (this.startDate && this.startDate.isAfter(this.endDate)) {
+                        this.setStartDate(this.endDate);
                     }
                 }
             } else if (this.endDate || date.isBefore(this.startDate, 'day')) { //picking start
-                if (this.timePicker) {
-                    var hour = parseInt(this.container.find('.left .hourselect').val(), 10);
-                    if (!this.timePicker24Hour) {
-                        var ampm = this.container.find('.left .ampmselect').val();
-                        if (ampm === 'PM' && hour < 12)
-                            hour += 12;
-                        if (ampm === 'AM' && hour === 12)
-                            hour = 0;
-                    }
-                    var minute = parseInt(this.container.find('.left .minuteselect').val(), 10);
-                    var second = this.timePickerSeconds ? parseInt(this.container.find('.left .secondselect').val(), 10) : 0;
-                    date = date.clone().hour(hour).minute(minute).second(second);
-                }
                 this.endDate = null;
-                this.setStartDate(date.clone());
+                this.setStartDate(addTimeOfDay('.left', date));
             } else if (!this.endDate && date.isBefore(this.startDate)) {
                 //special case: clicking the same date for start/end,
                 //but the time of the end date is before the start date
                 this.setEndDate(this.startDate.clone());
             } else { // picking end
-                if (this.timePicker) {
-                    var hour = parseInt(this.container.find('.right .hourselect').val(), 10);
-                    if (!this.timePicker24Hour) {
-                        var ampm = this.container.find('.right .ampmselect').val();
-                        if (ampm === 'PM' && hour < 12)
-                            hour += 12;
-                        if (ampm === 'AM' && hour === 12)
-                            hour = 0;
-                    }
-                    var minute = parseInt(this.container.find('.right .minuteselect').val(), 10);
-                    var second = this.timePickerSeconds ? parseInt(this.container.find('.right .secondselect').val(), 10) : 0;
-                    date = date.clone().hour(hour).minute(minute).second(second);
-                }
-                this.setEndDate(date.clone());
+                this.setEndDate(addTimeOfDay('.right', date));
+
                 if (this.autoApply) {
                   this.calculateChosenLabel();
                   this.clickApply();
