@@ -52,7 +52,7 @@
         this.autoUpdateInput = true;
         this.alwaysShowCalendars = false;
         this.ranges = {};
-        this.extendRange = true;
+        this.endpointCalendars = false;
 
         this.opens = 'right';
         if (this.element.hasClass('pull-right'))
@@ -274,8 +274,8 @@
         if (typeof options.alwaysShowCalendars === 'boolean')
             this.alwaysShowCalendars = options.alwaysShowCalendars;
 
-        if (typeof options.extendRange === 'boolean')
-            this.extendRange = options.extendRange;
+        if (typeof options.endpointCalendars === 'boolean')
+            this.endpointCalendars = options.endpointCalendars;
 
         // update day names order to firstDay
         if (this.locale.firstDay != 0) {
@@ -1267,7 +1267,7 @@
             var date = cal.hasClass('left') ? this.leftCalendar.calendar[row][col] : this.rightCalendar.calendar[row][col];
 
             var input = null;
-            if (this.extendRange) {
+            if (this.endpointCalendars) {
                 if (cal.hasClass('left')) {
                   input = this.container.find('input[name=daterangepicker_start]');
                 } else {
@@ -1348,17 +1348,18 @@
             // * if single date picker mode, and time picker isn't enabled, apply the selection immediately
             // * if one of the inputs above the calendars was focused, cancel that manual input
             //
-            if (this.extendRange) {
+            if (this.endpointCalendars) {
                 if (cal.hasClass('left')) {
                     this.setStartDate(addTimeOfDay('.left', date));
                     if (this.endDate && this.startDate.isAfter(this.endDate)) {
                         this.setEndDate(this.startDate);
                     }
                 } else {
-                    this.setEndDate(addTimeOfDay('.right', date));
-                    if (this.startDate && this.startDate.isAfter(this.endDate)) {
-                        this.setStartDate(this.endDate);
+                    date = addTimeOfDay('.right', date);
+                    if (this.startDate && this.startDate.isAfter(date)) {
+                        this.setStartDate(date);
                     }
+                    this.setEndDate(date);
                 }
             } else if (this.endDate || date.isBefore(this.startDate, 'day')) { //picking start
                 this.endDate = null;
